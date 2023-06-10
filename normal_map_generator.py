@@ -159,8 +159,8 @@ def adjust_path(Org_Path:str,addto:str):
     path = Org_Path.split("\\")
     file = path[-1]
     filename = file.split(".")[0]
-    format_str="_diffuse"
-    # Filename without _diffuse
+    format_str="_albedo"
+    # Filename without _albedo
     filename = filename[:-len(format_str)]
     fileext = file.split(".")[-1]
 
@@ -258,7 +258,7 @@ def start_convert():
     input_folder = args.input_folder
     size = args.size
 
-    image_name_format = f"{input_folder}/*_diffuse"
+    image_name_format = f"{input_folder}/*_albedo"
     image_files = glob.glob(f"{image_name_format}.png",recursive=True) + glob.glob(f"{image_name_format}.jpg",recursive=True)
     
     for input_file in image_files:
