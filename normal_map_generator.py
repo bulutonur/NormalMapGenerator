@@ -1,4 +1,5 @@
 import argparse
+import glob
 import math
 import numpy as np
 from scipy import ndimage
@@ -121,7 +122,7 @@ def shadow(im:np.ndarray):
 
     return shadow
 
-def flipgreen(path:str):
+def flip_green(path:str):
     try:
         with Image.open(path) as img:
             red, green, blue, alpha= img.split()
@@ -133,7 +134,7 @@ def flipgreen(path:str):
             image = Image.merge("RGB",(red,ImageOps.invert(green),blue))
             image.save(path)
 
-def CleanupAO(path:str):
+def cleanup_AO(path:str):
     '''
     Remove unnsesary channels.
     '''
@@ -148,7 +149,7 @@ def CleanupAO(path:str):
             NewG = ImageOps.colorize(green,black=(100, 100, 100),white=(255,255,255),blackpoint=0,whitepoint=180)
             NewG.save(path)
 
-def adjustPath(Org_Path:str,addto:str):
+def adjust_path(Org_Path:str,addto:str):
     '''
     Adjust the given path to correctly save the new file.
     '''
@@ -156,6 +157,9 @@ def adjustPath(Org_Path:str,addto:str):
     path = Org_Path.split("\\")
     file = path[-1]
     filename = file.split(".")[0]
+    format_str="_diffuse"
+    # Filename without _diffuse
+    filename = filename[:-len(format_str)]
     fileext = file.split(".")[-1]
 
     newfilename = filename + "_" + addto + "." + fileext
@@ -166,7 +170,7 @@ def adjustPath(Org_Path:str,addto:str):
 
     return newpath
 
-def Convert(input_file,smoothness,intensity):
+def convert(input_file,smoothness,intensity):
 
     im = pyplot.imread(input_file)
 
@@ -178,23 +182,22 @@ def Convert(input_file,smoothness,intensity):
     im_smooth = smooth_gaussian(im, smoothness)
 
     sobel_x, sobel_y = sobel(im_smooth)
-
     normal_map = compute_normal_map(sobel_x, sobel_y, intensity)
 
-    pyplot.imsave(adjustPath(input_file,"Normal"),normal_map)
+    pyplot.imsave(adjust_path(input_file,"normal"),normal_map)
 
-    flipgreen(adjustPath(input_file,"Normal"))
+    flip_green(adjust_path(input_file,"normal"))
 
     im_shadow = shadow(im)
 
-    pyplot.imsave(adjustPath(input_file,"AO"),im_shadow)
-    CleanupAO(adjustPath(input_file,"AO"))
+    pyplot.imsave(adjust_path(input_file,"ao"),im_shadow)
+    cleanup_AO(adjust_path(input_file,"ao"))
 
-def startConvert():
+def start_convert():
     
     parser = argparse.ArgumentParser(description='Compute normal map of an image')
 
-    parser.add_argument('input_file', type=str, help='input folder path')
+    parser.add_argument('input_folder', type=str, help='input folder path')
     parser.add_argument('-s', '--smooth', default=0., type=float, help='smooth gaussian blur applied on the image')
     parser.add_argument('-it', '--intensity', default=1., type=float, help='intensity of the normal map')
 
@@ -202,27 +205,16 @@ def startConvert():
 
     sigma = args.smooth
     intensity = args.intensity
-    input_file = args.input_file
-    """
-    for i in ["Ao","Normal"]:
-        final_path = os.path.join(input_file,i)
-        if not os.path.isdir(final_path):
-            os.makedirs (final_path)
-    
-    for root, _, files in os.walk(input_file, topdown=False):
-       for name in files:
-          input_file.append(str(os.path.join(root, name).replace("/","\\")))
-    """
-    if type(input_file) == str:
-        Convert(input_file,sigma,intensity)
-    elif type(input_file) == list:
-        for i in input_file:
-            ctx = mp.get_context('spawn')
-            q = ctx.Queue()
-            p = ctx.Process(target=Convert,args=(input_file,sigma,intensity))
-            p.start()
-        p.join()
+    input_folder = args.input_folder
 
+    image_name_format = f"{input_folder}/*_diffuse"
+    image_files = glob.glob(f"{image_name_format}.png",recursive=True) + glob.glob(f"{image_name_format}.jpg",recursive=True)
+    
+    for input_file in image_files:
+        print(f"Converting f{input_file}")
+        convert(input_file,sigma,intensity)
+
+    print("Completed")
 
 if __name__ == "__main__":
-    startConvert()
+    start_convert()
