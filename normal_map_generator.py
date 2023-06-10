@@ -158,7 +158,7 @@ def adjustPath(Org_Path:str,addto:str):
     filename = file.split(".")[0]
     fileext = file.split(".")[-1]
 
-    newfilename = addto+"\\"+filename + "_" + addto + "." + fileext
+    newfilename = filename + "_" + addto + "." + fileext
     path.pop(-1)
     path.append(newfilename)
 
@@ -203,7 +203,7 @@ def startConvert():
     sigma = args.smooth
     intensity = args.intensity
     input_file = args.input_file
-    
+    """
     for i in ["Ao","Normal"]:
         final_path = os.path.join(input_file,i)
         if not os.path.isdir(final_path):
@@ -212,7 +212,7 @@ def startConvert():
     for root, _, files in os.walk(input_file, topdown=False):
        for name in files:
           input_file.append(str(os.path.join(root, name).replace("/","\\")))
-    
+    """
     if type(input_file) == str:
         Convert(input_file,sigma,intensity)
     elif type(input_file) == list:
@@ -222,3 +222,7 @@ def startConvert():
             p = ctx.Process(target=Convert,args=(input_file,sigma,intensity))
             p.start()
         p.join()
+
+
+if __name__ == "__main__":
+    startConvert()
