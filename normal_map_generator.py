@@ -8,6 +8,7 @@ from PIL import Image, ImageOps
 import os
 import multiprocessing as mp
 import os.path
+import cv2
 
 def smooth_gaussian(im:np.ndarray, sigma) -> np.ndarray:
 
@@ -171,8 +172,18 @@ def adjust_path(Org_Path:str,addto:str):
 
     return newpath
 
+def resize(input_file : str , size : int):
+    original_img=cv2.imread(input_file)
+    original_width=original_img.shape[1]
+    original_height=original_img.shape[0]
+    original_ratio=float(original_width)/float(original_height)
+    new_width=size
+    new_height=int(size*original_ratio)
+    # width and height are in reversed order for cv2
+    new_img=cv2.resize(original_img, (new_height,new_width))
+    cv2.imwrite(input_file, new_img)
 
-def convert_normal_map(input_file,smoothness,intensity):
+def convert_normal_map(input_file,smoothness,intensity,size : int):
 
     normal_filename=adjust_path(input_file,"normal")
     # Only convert it not exists
@@ -195,7 +206,11 @@ def convert_normal_map(input_file,smoothness,intensity):
     pyplot.imsave(normal_filename,normal_map)
     flip_green(normal_filename)
 
-def convert_ao_map(input_file): 
+    resize(normal_filename,size)
+
+    print(f"Created {normal_filename}")
+
+def convert_ao_map(input_file,size : int): 
     ao_filename=adjust_path(input_file,"ao")
     # Only convert it not exists
     if os.path.isfile(ao_filename):
@@ -213,33 +228,38 @@ def convert_ao_map(input_file):
 
     pyplot.imsave(ao_filename,im_shadow)
     cleanup_AO(ao_filename)
+    
+    resize(ao_filename,size)
 
+    print(f"Created {ao_filename}")
 
-def convert(input_file,smoothness,intensity):
+def convert(input_file,smoothness,intensity,size : int):
 
-    convert_normal_map(input_file,smoothness,intensity)
-    convert_ao_map(input_file)
+    convert_normal_map(input_file,smoothness,intensity,size)
+    convert_ao_map(input_file,size)
 
 def start_convert():
     
     parser = argparse.ArgumentParser(description='Compute normal map of an image')
 
     parser.add_argument('input_folder', type=str, help='input folder path')
-    parser.add_argument('-s', '--smooth', default=0., type=float, help='smooth gaussian blur applied on the image')
+    parser.add_argument('-sm', '--smooth', default=0., type=float, help='smooth gaussian blur applied on the image')
     parser.add_argument('-it', '--intensity', default=1., type=float, help='intensity of the normal map')
+    parser.add_argument('-sz', '--size', default=512, type=int, help='size of image')
 
     args = parser.parse_args()
 
     sigma = args.smooth
     intensity = args.intensity
     input_folder = args.input_folder
+    size = args.size
 
     image_name_format = f"{input_folder}/*_diffuse"
     image_files = glob.glob(f"{image_name_format}.png",recursive=True) + glob.glob(f"{image_name_format}.jpg",recursive=True)
     
     for input_file in image_files:
         print(f"Converting {input_file}")
-        convert(input_file,sigma,intensity)
+        convert(input_file,sigma,intensity,size)
 
     print("Completed")
 
