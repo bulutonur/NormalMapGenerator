@@ -173,6 +173,10 @@ def adjust_path(Org_Path:str,addto:str):
     return newpath
 
 def resize(input_file : str , size : int):
+    not_setted = size < 0
+    if not_setted:
+        return
+    
     original_img=cv2.imread(input_file)
     original_width=original_img.shape[1]
     original_height=original_img.shape[0]
@@ -245,7 +249,7 @@ def start_convert():
     parser.add_argument('input_folder', type=str, help='input folder path')
     parser.add_argument('-sm', '--smooth', default=0., type=float, help='smooth gaussian blur applied on the image')
     parser.add_argument('-it', '--intensity', default=1., type=float, help='intensity of the normal map')
-    parser.add_argument('-sz', '--size', default=512, type=int, help='size of image')
+    parser.add_argument('-sz', '--size', default=-1, type=int, help='size of image')
 
     args = parser.parse_args()
 
