@@ -7,6 +7,7 @@ from matplotlib import pyplot
 from PIL import Image, ImageOps
 import os
 import multiprocessing as mp
+import os.path
 
 def smooth_gaussian(im:np.ndarray, sigma) -> np.ndarray:
 
@@ -170,8 +171,15 @@ def adjust_path(Org_Path:str,addto:str):
 
     return newpath
 
-def convert(input_file,smoothness,intensity):
 
+def convert_normal_map(input_file,smoothness,intensity):
+
+    normal_filename=adjust_path(input_file,"normal")
+    # Only convert it not exists
+    if os.path.isfile(normal_filename):
+        print(f"{normal_filename} exists. Skipping it")
+        return
+    
     im = pyplot.imread(input_file)
 
     if im.ndim == 3:
@@ -184,14 +192,33 @@ def convert(input_file,smoothness,intensity):
     sobel_x, sobel_y = sobel(im_smooth)
     normal_map = compute_normal_map(sobel_x, sobel_y, intensity)
 
-    pyplot.imsave(adjust_path(input_file,"normal"),normal_map)
+    pyplot.imsave(normal_filename,normal_map)
+    flip_green(normal_filename)
 
-    flip_green(adjust_path(input_file,"normal"))
+def convert_ao_map(input_file): 
+    ao_filename=adjust_path(input_file,"ao")
+    # Only convert it not exists
+    if os.path.isfile(ao_filename):
+        print(f"{ao_filename} exists. Skipping it")
+        return
+    
+    im = pyplot.imread(input_file)
+
+    if im.ndim == 3:
+        im_grey = np.zeros((im.shape[0],im.shape[1])).astype(float)
+        im_grey = (im[...,0] * 0.3 + im[...,1] * 0.6 + im[...,2] * 0.1)
+        im = im_grey
 
     im_shadow = shadow(im)
 
-    pyplot.imsave(adjust_path(input_file,"ao"),im_shadow)
-    cleanup_AO(adjust_path(input_file,"ao"))
+    pyplot.imsave(ao_filename,im_shadow)
+    cleanup_AO(ao_filename)
+
+
+def convert(input_file,smoothness,intensity):
+
+    convert_normal_map(input_file,smoothness,intensity)
+    convert_ao_map(input_file)
 
 def start_convert():
     
@@ -211,7 +238,7 @@ def start_convert():
     image_files = glob.glob(f"{image_name_format}.png",recursive=True) + glob.glob(f"{image_name_format}.jpg",recursive=True)
     
     for input_file in image_files:
-        print(f"Converting f{input_file}")
+        print(f"Converting {input_file}")
         convert(input_file,sigma,intensity)
 
     print("Completed")
