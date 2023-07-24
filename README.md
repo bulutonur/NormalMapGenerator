@@ -4,29 +4,42 @@ Normal Map Generator is a tool written in Python
 
 ## Required
 
-- Python
-- Scipy
-- Numpy
+- Python 3
+- numpy
+- matplotlib
+- Pillow
+- scipy
+- opencv-python
+
+See requirements.txt
 
 ## Usage
 
-./normal_map_generator.py input_file output_file --smooth SMOOTH_VALUE -- intensity INTENSITY_VALUE
+Add images ending with _albedo.png or _albedo.jpg to input_folder. For example:
 
-### Required arguments:
+input_folder/bricks_albedo.png
 
-#### input_file            
+input_folder/bricks_albedo.jpg
+
+```
+python3 normal_map_generator.py input_folder --smooth SMOOTH_VALUE -- intensity INTENSITY_VALUE
+```
+
+#### input_folder            
 input image path
-
-#### output_file          
-output image path
 
 ### Optional arguments:
 
 #### -h, --help            
 Show help message
 
-#### -s SMOOTH_VALUE, --smooth SMOOTH_VALUE
+#### -sm SMOOTH_VALUE, --smooth SMOOTH_VALUE
 Smooth gaussian blur applied on the image
 
 #### -it INTENSITY_VALUE, --intensity INTENSITY_VALUE
 Intensity of the normal map
+
+#### -sz SIZE, --size SIZE
+Size of texture. For example : 512
+
+If size is not defined, it will be original size of albedo textures.
