@@ -22,7 +22,7 @@ input_folder/bricks_albedo.png
 input_folder/bricks_albedo.jpg
 
 ```
-python3 normal_map_generator.py input_folder --smooth SMOOTH_VALUE -- intensity INTENSITY_VALUE
+python3 normal_map_generator.py input_folder --smooth SMOOTH_VALUE --intensity INTENSITY_VALUE
 ```
 
 #### input_folder            
