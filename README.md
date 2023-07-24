@@ -34,10 +34,14 @@ input images folder path
 Show help message
 
 #### -sm SMOOTH_VALUE, --smooth SMOOTH_VALUE
-Smooth gaussian blur applied on the image
+Smooth gaussian blur applied on the image.
+
+For example: 0.0
 
 #### -it INTENSITY_VALUE, --intensity INTENSITY_VALUE
 Intensity of the normal map
+
+For example: 4.0
 
 #### -sz SIZE, --size SIZE
 Size of texture. For example : 512
