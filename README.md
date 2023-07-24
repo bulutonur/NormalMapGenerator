@@ -26,7 +26,7 @@ python3 normal_map_generator.py input_folder --smooth SMOOTH_VALUE --intensity I
 ```
 
 #### input_folder            
-input image path
+input images folder path
 
 ### Optional arguments:
 
